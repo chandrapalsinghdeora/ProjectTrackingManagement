@@ -1,0 +1,61 @@
+	@RequestMapping(value="/downloadphotoUploadFile", method = RequestMethod.POST)
+	public ModelAndView downloadrequest(HttpServletRequest request,HttpServletResponse response){
+	List<Bug> emp = fetchbugservice.ifile(bugno);
+	String mimeType=null;
+	File f=null;
+	try{
+	f = new File(emp.get(0).getImage());
+	mimeType = getMimeType(f.getCanonicalPath());
+	} catch (Exception e) {
+			List<Bug> list=issueservice.issueinformation(bugno);
+			String message="no file attached";
+			ModelAndView modelMapValue = new ModelAndView("Issue","message",message);
+			System.out.println("ppppppppppp"+bugno);
+			modelMapValue.addObject("qa_name",list.get(0).getQAName());
+			modelMapValue.addObject("name",list.get(0).getMonitor());
+			modelMapValue.addObject("assign_to",list.get(0).getAssignTo());
+			modelMapValue.addObject("modname",list.get(0).getModule());
+			modelMapValue.addObject("subModulename",list.get(0).getSubModule());
+			modelMapValue.addObject("round",list.get(0).getRound());
+			modelMapValue.addObject("description",list.get(0).getDescription());
+			modelMapValue.addObject("depends",list.get(0).getDepends());
+			modelMapValue.addObject("date",list.get(0).getDate());
+			return modelMapValue;
+	}
+   if (mimeType == null) {        
+       mimeType = "application/excel";
+   }
+           response.setContentType(mimeType);
+           response.setHeader("Content-Disposition", "attachment;filename=\"" + f.getName()
+                           + "\"");
+           response.setContentLength((int) f.length());
+           InputStream is = null;
+			try {
+				is = new FileInputStream(f);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+           ServletOutputStream outStream = null;
+			try {
+				outStream = response.getOutputStream();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}  
+           try {
+				org.apache.commons.io.IOUtils.copy(is, outStream);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+           try {
+				is.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+           try {
+				outStream.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+           return new ModelAndView("Issue");
+}	
+
